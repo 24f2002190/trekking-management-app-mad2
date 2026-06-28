@@ -9,5 +9,5 @@ class Config:
 
     SECURITY_PASSWORD_SALT = "tma-password-salt"
     SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authentication-Token"
-    SECURITY_PASSWORD_HASH = "bcrypt"
+    SECURITY_PASSWORD_HASH = "sha256_crypt"
     WTF_CSRF_ENABLED = False
