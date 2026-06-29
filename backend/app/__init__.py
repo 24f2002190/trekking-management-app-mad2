@@ -20,8 +20,14 @@ def create_app():
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore)
 
-    # Register blueprints
+    # Register all blueprints
     from app.routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
+
+    from app.routes.admin_routes import admin_bp
+    app.register_blueprint(admin_bp, url_prefix="/api/admin")
+
+    from app.routes.staff_routes import staff_bp
+    app.register_blueprint(staff_bp, url_prefix="/api/staff")
 
     return app, user_datastore
