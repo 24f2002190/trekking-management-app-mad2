@@ -3,40 +3,41 @@ from flask_security import auth_required, roles_required
 from app.models import db, User, Trek, Booking, StaffProfile, Role
 from app import user_datastore
 import uuid
+from datetime import date
 
 admin_bp = Blueprint("admin", __name__)
 
 
 def staff_to_dict(staff):
     return {
-        "id": staff.id,
-        "user_id": staff.user_id,
-        "name": staff.user.full_name,
-        "email": staff.user.email,
+        "id":             staff.id,
+        "user_id":        staff.user_id,
+        "name":           staff.user.full_name,
+        "email":          staff.user.email,
         "contact_detail": staff.contact_detail,
-        "is_active": staff.is_active,
+        "is_active":      staff.is_active,
         "assigned_treks": [{"id": t.id, "name": t.name} for t in staff.assigned_treks]
     }
 
 
 def trek_to_dict(trek):
     return {
-        "id": trek.id,
-        "name": trek.name,
-        "location": trek.location,
-        "difficulty": trek.difficulty,
-        "duration_days": trek.duration_days,
-        "available_slots": trek.available_slots,
-        "total_slots": trek.total_slots,
-        "status": trek.status,
-        "start_date": str(trek.start_date) if trek.start_date else None,
-        "end_date": str(trek.end_date) if trek.end_date else None,
-        "description": trek.description,
+        "id":               trek.id,
+        "name":             trek.name,
+        "location":         trek.location,
+        "difficulty":       trek.difficulty,
+        "duration_days":    trek.duration_days,
+        "available_slots":  trek.available_slots,
+        "total_slots":      trek.total_slots,
+        "status":           trek.status,
+        "start_date":       str(trek.start_date) if trek.start_date else None,
+        "end_date":         str(trek.end_date) if trek.end_date else None,
+        "description":      trek.description,
         "assigned_staff_id": trek.assigned_staff_id,
     }
 
 
-# ── Dashboard summary ────────────────────────────────────────────────────────
+# ── Dashboard summary ─────────────────────────────────────────────────────────
 
 @admin_bp.route("/dashboard", methods=["GET"])
 @auth_required("token")
@@ -57,7 +58,7 @@ def dashboard():
     }), 200
 
 
-# ── Trek management ──────────────────────────────────────────────────────────
+# ── Trek management ───────────────────────────────────────────────────────────
 
 @admin_bp.route("/treks", methods=["GET"])
 @auth_required("token")
@@ -93,8 +94,8 @@ def create_trek():
         available_slots = int(data["total_slots"]),
         status          = "Pending",
         description     = data.get("description", ""),
-        start_date      = data.get("start_date"),
-        end_date        = data.get("end_date"),
+        start_date      = date.fromisoformat(data["start_date"]) if data.get("start_date") else None,
+        end_date        = date.fromisoformat(data["end_date"]) if data.get("end_date") else None,
     )
     db.session.add(trek)
     db.session.commit()
@@ -108,16 +109,16 @@ def update_trek(trek_id):
     trek = Trek.query.get_or_404(trek_id)
     data = request.get_json()
 
-    trek.name            = data.get("name",          trek.name)
-    trek.location        = data.get("location",       trek.location)
-    trek.difficulty      = data.get("difficulty",     trek.difficulty)
-    trek.duration_days   = data.get("duration_days",  trek.duration_days)
-    trek.total_slots     = data.get("total_slots",    trek.total_slots)
-    trek.available_slots = data.get("available_slots",trek.available_slots)
-    trek.status          = data.get("status",         trek.status)
-    trek.description     = data.get("description",    trek.description)
-    trek.start_date      = data.get("start_date",     trek.start_date)
-    trek.end_date        = data.get("end_date",       trek.end_date)
+    trek.name            = data.get("name",           trek.name)
+    trek.location        = data.get("location",        trek.location)
+    trek.difficulty      = data.get("difficulty",      trek.difficulty)
+    trek.duration_days   = data.get("duration_days",   trek.duration_days)
+    trek.total_slots     = data.get("total_slots",     trek.total_slots)
+    trek.available_slots = data.get("available_slots", trek.available_slots)
+    trek.status          = data.get("status",          trek.status)
+    trek.description     = data.get("description",     trek.description)
+    trek.start_date = date.fromisoformat(data["start_date"]) if data.get("start_date") else trek.start_date
+    trek.end_date   = date.fromisoformat(data["end_date"]) if data.get("end_date") else trek.end_date
 
     db.session.commit()
     return jsonify({"message": "Trek updated", "trek": trek_to_dict(trek)}), 200
@@ -133,13 +134,13 @@ def delete_trek(trek_id):
     return jsonify({"message": "Trek deleted"}), 200
 
 
-# ── Staff management ─────────────────────────────────────────────────────────
+# ── Staff management ──────────────────────────────────────────────────────────
 
 @admin_bp.route("/staff", methods=["GET"])
 @auth_required("token")
 @roles_required("admin")
 def get_all_staff():
-    search = request.args.get("search", "").lower()
+    search     = request.args.get("search", "").lower()
     staff_list = StaffProfile.query.all()
     if search:
         staff_list = [s for s in staff_list if search in s.user.full_name.lower()]
@@ -193,7 +194,7 @@ def assign_staff_to_trek(staff_id, trek_id):
     return jsonify({"message": f"{staff.user.full_name} assigned to {trek.name}"}), 200
 
 
-# ── User management ──────────────────────────────────────────────────────────
+# ── User management ───────────────────────────────────────────────────────────
 
 @admin_bp.route("/users", methods=["GET"])
 @auth_required("token")
@@ -206,8 +207,13 @@ def get_all_users():
     if search:
         users = [u for u in users if search in u.full_name.lower() or search in u.email.lower()]
 
-    result = [{"id": u.id, "email": u.email, "username": u.username,
-               "full_name": u.full_name, "active": u.active} for u in users]
+    result = [{
+        "id":        u.id,
+        "email":     u.email,
+        "username":  u.username,
+        "full_name": u.full_name,
+        "active":    u.active,
+    } for u in users]
     return jsonify({"users": result}), 200
 
 
@@ -231,14 +237,14 @@ def activate_user(user_id):
     return jsonify({"message": f"{user.username} has been activated"}), 200
 
 
-# ── Bookings overview ────────────────────────────────────────────────────────
+# ── Bookings overview ─────────────────────────────────────────────────────────
 
 @admin_bp.route("/bookings", methods=["GET"])
 @auth_required("token")
 @roles_required("admin")
 def get_all_bookings():
     bookings = Booking.query.all()
-    result = [{
+    result   = [{
         "id":             b.id,
         "user":           b.trekker.username,
         "trek":           b.trek.name,
