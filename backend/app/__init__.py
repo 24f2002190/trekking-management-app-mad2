@@ -29,5 +29,6 @@ def create_app():
 
     from app.routes.staff_routes import staff_bp
     app.register_blueprint(staff_bp, url_prefix="/api/staff")
+    
 
     return app, user_datastore

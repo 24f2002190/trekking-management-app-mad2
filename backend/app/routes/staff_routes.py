@@ -1,30 +1,33 @@
+from datetime import date
 from flask import Blueprint, request, jsonify
 from flask_security import auth_required, roles_required, current_user
 from app.models import db, Trek, Booking, StaffProfile
 
 staff_bp = Blueprint("staff", __name__)
 
+
 def trek_to_dict(trek):
     return {
-        "id":               trek.id,
-        "name":             trek.name,
-        "location":         trek.location,
-        "difficulty":       trek.difficulty,
-        "duration_days":    trek.duration_days,
-        "available_slots":  trek.available_slots,
-        "total_slots":      trek.total_slots,
-        "status":           trek.status,
-        "start_date":       str(trek.start_date) if trek.start_date else None,
-        "end_date":         str(trek.end_date) if trek.end_date else None,
-        "description":      trek.description,
+        "id":              trek.id,
+        "name":            trek.name,
+        "location":        trek.location,
+        "difficulty":      trek.difficulty,
+        "duration_days":   trek.duration_days,
+        "available_slots": trek.available_slots,
+        "total_slots":     trek.total_slots,
+        "status":          trek.status,
+        "start_date":      str(trek.start_date) if trek.start_date else None,
+        "end_date":        str(trek.end_date) if trek.end_date else None,
+        "description":     trek.description,
     }
 
 
 def get_staff_profile():
+    """Returns StaffProfile for the currently logged-in staff user."""
     return StaffProfile.query.filter_by(user_id=current_user.id).first()
 
 
-#dashboard route
+# ── Dashboard ─────────────────────────────────────────────────────────────────
 
 @staff_bp.route("/dashboard", methods=["GET"])
 @auth_required("token")
@@ -34,10 +37,8 @@ def dashboard():
     if not profile:
         return jsonify({"message": "Staff profile not found"}), 404
 
-    assigned = profile.assigned_treks
-    summary  = []
-
-    for trek in assigned:
+    summary = []
+    for trek in profile.assigned_treks:
         booked_count = Booking.query.filter_by(
             trek_id=trek.id, status="Booked"
         ).count()
@@ -52,7 +53,7 @@ def dashboard():
     }), 200
 
 
-#treks routes
+# ── View assigned treks ───────────────────────────────────────────────────────
 
 @staff_bp.route("/treks", methods=["GET"])
 @auth_required("token")
@@ -66,7 +67,7 @@ def get_assigned_treks():
     return jsonify({"treks": treks}), 200
 
 
-#route for updating trek details
+# ── Update trek slots or status ───────────────────────────────────────────────
 
 @staff_bp.route("/treks/<int:trek_id>", methods=["PUT"])
 @auth_required("token")
@@ -77,6 +78,7 @@ def update_trek(trek_id):
         return jsonify({"message": "Staff profile not found"}), 404
 
     trek = Trek.query.get_or_404(trek_id)
+
     if trek.assigned_staff_id != profile.id:
         return jsonify({"message": "You are not assigned to this trek"}), 403
 
@@ -98,7 +100,7 @@ def update_trek(trek_id):
     return jsonify({"message": "Trek updated", "trek": trek_to_dict(trek)}), 200
 
 
-#View participants for an assigned trek 
+# ── View participants for an assigned trek ────────────────────────────────────
 
 @staff_bp.route("/treks/<int:trek_id>/participants", methods=["GET"])
 @auth_required("token")
@@ -130,7 +132,7 @@ def get_participants(trek_id):
     }), 200
 
 
-#Mark trek as started/completed
+# ── Mark trek as started ──────────────────────────────────────────────────────
 
 @staff_bp.route("/treks/<int:trek_id>/mark-started", methods=["POST"])
 @auth_required("token")
@@ -147,6 +149,8 @@ def mark_started(trek_id):
     return jsonify({"message": f"Trek '{trek.name}' marked as Ongoing"}), 200
 
 
+# ── Mark trek as completed ────────────────────────────────────────────────────
+
 @staff_bp.route("/treks/<int:trek_id>/mark-completed", methods=["POST"])
 @auth_required("token")
 @roles_required("trek_staff")
@@ -159,6 +163,7 @@ def mark_completed(trek_id):
 
     trek.status = "Completed"
 
+    # Mark all active bookings as completed too
     active_bookings = Booking.query.filter_by(trek_id=trek_id, status="Booked").all()
     for booking in active_bookings:
         booking.status = "Completed"
