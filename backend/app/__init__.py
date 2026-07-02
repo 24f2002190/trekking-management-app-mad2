@@ -33,5 +33,7 @@ def create_app():
     from app.routes.user_routes import user_bp
     app.register_blueprint(user_bp, url_prefix="/api/user")
     
+    from app.routes.booking_routes import booking_bp
+    app.register_blueprint(booking_bp, url_prefix="/api/bookings")
 
     return app, user_datastore
