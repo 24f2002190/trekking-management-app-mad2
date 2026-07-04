@@ -7,7 +7,21 @@ class Config:
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(base_dir, "..", "tma.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    SECURITY_PASSWORD_SALT = "tma-password-salt"
+    # Flask-Security
+    SECURITY_PASSWORD_SALT  = "tma-password-salt"
     SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authentication-Token"
-    SECURITY_PASSWORD_HASH = "sha256_crypt"
-    WTF_CSRF_ENABLED = False
+    SECURITY_PASSWORD_HASH  = "sha256_crypt"
+    WTF_CSRF_ENABLED        = False
+
+    # Redis + Celery
+    CELERY_BROKER_URL        = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND    = "redis://localhost:6379/0"
+    CELERY_TIMEZONE          = "Asia/Kolkata"
+
+    # Mail (using Gmail)
+    MAIL_SERVER   = "smtp.gmail.com"
+    MAIL_PORT     = 587
+    MAIL_USE_TLS  = True
+    MAIL_USERNAME = "agarwalvedika28@gmail.com"       
+    MAIL_PASSWORD = "icycjxhxqtufdagp"    
+    MAIL_DEFAULT_SENDER = "agarwalvedika28@gmail.com" 
