@@ -18,6 +18,11 @@ class Config:
     CELERY_RESULT_BACKEND    = "redis://localhost:6379/0"
     CELERY_TIMEZONE          = "Asia/Kolkata"
 
+    # Redis Caching
+    CACHE_TYPE             = "RedisCache"
+    CACHE_REDIS_URL        = "redis://localhost:6379/1"  
+    CACHE_DEFAULT_TIMEOUT  = 300  
+
     # Mail (using Gmail)
     MAIL_SERVER   = "smtp.gmail.com"
     MAIL_PORT     = 587

@@ -1,13 +1,15 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_mail import Mail
+from flask_caching import Cache
 from app.models import db
 from app.config import Config
 from flask_security import Security, SQLAlchemyUserDatastore
 
-security      = None
+security       = None
 user_datastore = None
-mail          = Mail()
+mail           = Mail()
+cache          = Cache()
 
 
 def create_app():
@@ -19,6 +21,7 @@ def create_app():
     db.init_app(app)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     mail.init_app(app)
+    cache.init_app(app)
 
     from app.models import User, Role
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)

@@ -4,6 +4,7 @@ from app.models import db, User, Trek, Booking, StaffProfile, Role
 from app import user_datastore
 import uuid
 from datetime import date
+from app import cache
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -42,6 +43,11 @@ def trek_to_dict(trek):
 @admin_bp.route("/dashboard", methods=["GET"])
 @auth_required("token")
 @roles_required("admin")
+@admin_bp.route("/dashboard", methods=["GET"])
+@auth_required("token")
+@roles_required("admin")
+@cache.cached(timeout=60)
+    
 def dashboard():
     total_treks    = Trek.query.count()
     total_bookings = Booking.query.count()
@@ -63,6 +69,12 @@ def dashboard():
 @admin_bp.route("/treks", methods=["GET"])
 @auth_required("token")
 @roles_required("admin")
+@admin_bp.route("/treks", methods=["GET"])
+@auth_required("token")
+@roles_required("admin")
+@cache.cached(timeout=120, query_string=True)
+
+
 def get_all_treks():
     search = request.args.get("search", "").lower()
     treks  = Trek.query.all()
@@ -99,6 +111,7 @@ def create_trek():
     )
     db.session.add(trek)
     db.session.commit()
+    cache.clear()
     return jsonify({"message": "Trek created", "trek": trek_to_dict(trek)}), 201
 
 
@@ -121,6 +134,7 @@ def update_trek(trek_id):
     trek.end_date   = date.fromisoformat(data["end_date"]) if data.get("end_date") else trek.end_date
 
     db.session.commit()
+    cache.clear()
     return jsonify({"message": "Trek updated", "trek": trek_to_dict(trek)}), 200
 
 
@@ -131,6 +145,7 @@ def delete_trek(trek_id):
     trek = Trek.query.get_or_404(trek_id)
     db.session.delete(trek)
     db.session.commit()
+    cache.clear()
     return jsonify({"message": "Trek deleted"}), 200
 
 

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_security import auth_required, roles_required, current_user
 from app.models import db, Trek, Booking, User
+from app import cache
 
 user_bp = Blueprint("user", __name__)
 
@@ -60,6 +61,11 @@ def dashboard():
 @user_bp.route("/treks", methods=["GET"])
 @auth_required("token")
 @roles_required("trekker")
+@user_bp.route("/treks", methods=["GET"])
+@auth_required("token")
+@roles_required("trekker")
+@cache.cached(timeout=120, query_string=True) 
+
 def browse_treks():
     search     = request.args.get("search", "").lower()
     difficulty = request.args.get("difficulty", "")
