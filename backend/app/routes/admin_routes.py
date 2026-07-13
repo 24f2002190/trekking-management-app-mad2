@@ -38,14 +38,13 @@ def trek_to_dict(trek):
     }
 
 
+
 # ── Dashboard summary ─────────────────────────────────────────────────────────
 
 @admin_bp.route("/dashboard", methods=["GET"])
 @auth_required("token")
 @roles_required("admin")
-@admin_bp.route("/dashboard", methods=["GET"])
-@auth_required("token")
-@roles_required("admin")
+
 @cache.cached(timeout=60)
     
 def dashboard():
@@ -66,9 +65,6 @@ def dashboard():
 
 # ── Trek management ───────────────────────────────────────────────────────────
 
-@admin_bp.route("/treks", methods=["GET"])
-@auth_required("token")
-@roles_required("admin")
 @admin_bp.route("/treks", methods=["GET"])
 @auth_required("token")
 @roles_required("admin")

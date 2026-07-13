@@ -61,9 +61,6 @@ def dashboard():
 @user_bp.route("/treks", methods=["GET"])
 @auth_required("token")
 @roles_required("trekker")
-@user_bp.route("/treks", methods=["GET"])
-@auth_required("token")
-@roles_required("trekker")
 @cache.cached(timeout=120, query_string=True) 
 
 def browse_treks():
