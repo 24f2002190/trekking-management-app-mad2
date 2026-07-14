@@ -15,7 +15,6 @@ def get_mail():
 
 @celery.task(name="app.tasks.send_daily_reminders")
 def send_daily_reminders():
-    """Send daily reminder emails to trekkers with upcoming booked treks."""
     mail = get_mail()
 
     active_bookings = Booking.query.filter_by(status="Booked").all()
@@ -36,7 +35,7 @@ def send_daily_reminders():
                     subject = f"Reminder: Your trek '{trek.name}' starts in {days_left} days!",
                     recipients = [user.email],
                     html = f"""
-                        <h2>Trek Reminder 🏔️</h2>
+                        <h2>Trek Reminder</h2>
                         <p>Hi {user.full_name},</p>
                         <p>Your upcoming trek <strong>{trek.name}</strong> starts
                         in <strong>{days_left} days</strong>!</p>
@@ -61,7 +60,6 @@ def send_daily_reminders():
 
 @celery.task(name="app.tasks.send_monthly_report")
 def send_monthly_report():
-    """Generate and email a monthly trekking activity report to admin."""
     mail  = get_mail()
     now   = datetime.utcnow()
     month = now.strftime("%B %Y")
@@ -130,11 +128,10 @@ def send_monthly_report():
     return "No admin found"
 
 
-# ── Task 3: CSV export (user triggered) ──────────────────────────────────────
+# ── Task 3: CSV export ──────────────────────────────────────
 
 @celery.task(name="app.tasks.export_booking_csv")
 def export_booking_csv(user_id):
-    """Export trekking history as CSV and email it to the user."""
     mail = get_mail()
     user = User.query.get(user_id)
 
@@ -172,7 +169,7 @@ def export_booking_csv(user_id):
             subject    = "Your Trekking History Export",
             recipients = [user.email],
             html       = f"""
-                <h2>Your Trekking History 🏔️</h2>
+                <h2>Your Trekking History </h2>
                 <p>Hi {user.full_name},</p>
                 <p>Please find your trekking history CSV attached.</p>
                 <p>Total bookings: {len(bookings)}</p>
@@ -183,6 +180,7 @@ def export_booking_csv(user_id):
             content_type = "text/csv",
             data         = csv_content,
         )
+    
         mail.send(msg)
         return f"CSV exported and sent to {user.email}"
     except Exception as e:

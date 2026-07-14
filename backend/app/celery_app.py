@@ -4,7 +4,6 @@ celery = Celery(__name__)
 
 
 def init_celery(app):
-    """Tie Celery config to Flask config."""
     celery.conf.update(
         broker_url       = app.config["CELERY_BROKER_URL"],
         result_backend   = app.config["CELERY_RESULT_BACKEND"],
