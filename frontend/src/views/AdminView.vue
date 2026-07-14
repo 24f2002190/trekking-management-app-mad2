@@ -9,34 +9,42 @@
 
     <div class="container py-4">
 
-      <!-- Stats Row -->
+      <!-- Clickable Stat Cards -->
       <div class="row g-3 mb-4">
         <div class="col-md-3" v-for="stat in stats" :key="stat.label">
-          <div class="card text-center p-3" style="border:1px solid #c8b89a;">
+          <div class="card text-center p-3" style="cursor:pointer; transition:box-shadow 0.2s;"
+            :style="activeTab === stat.tab
+              ? 'border:2px solid #4a6741; box-shadow:0 2px 8px rgba(74,103,65,0.15);'
+              : 'border:1px solid #c8b89a;'"
+            @click="activeTab = stat.tab"
+            @mouseenter="e => e.currentTarget.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
+            @mouseleave="e => e.currentTarget.style.boxShadow = activeTab === stat.tab ? '0 2px 8px rgba(74,103,65,0.15)' : 'none'">
             <h3 style="color:#4a6741;">{{ stat.value }}</h3>
-            <p class="mb-0 text-muted" style="font-size:0.85rem;">{{ stat.label }}</p>
+            <p class="mb-0" style="font-size:0.85rem; color:#5a4a3a;">{{ stat.label }}</p>
           </div>
         </div>
       </div>
 
-      <!-- Tabs -->
-      <ul class="nav nav-tabs mb-4">
-        <li class="nav-item" v-for="tab in tabs" :key="tab">
-          <a class="nav-link" :class="{ active: activeTab === tab }"
-            @click="activeTab = tab" href="#"
-            style="color:#4a6741;">{{ tab }}</a>
-        </li>
-      </ul>
+      <!-- Active Tab Label -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 style="color:#5a4a3a;">{{ activeTab }}</h5>
 
-      <!-- TREKS TAB -->
-      <div v-if="activeTab === 'Treks'">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 style="color:#5a4a3a;">All Treks</h5>
-          <button class="btn btn-sm" style="background:#4a6741; color:white;"
+        <div class="d-flex gap-2">
+          <button v-if="activeTab === 'Treks'" class="btn btn-sm"
+            style="background:#4a6741; color:white;"
             @click="showTrekForm = !showTrekForm">
             + New Trek
           </button>
+          <button v-if="activeTab === 'Staff'" class="btn btn-sm"
+            style="background:#4a6741; color:white;"
+            @click="showStaffForm = !showStaffForm">
+            + Add Staff
+          </button>
         </div>
+      </div>
+
+      <!-- TREKS PANEL -->
+      <div v-if="activeTab === 'Treks'">
 
         <!-- Create Trek Form -->
         <div v-if="showTrekForm" class="card p-3 mb-3" style="border:1px solid #c8b89a;">
@@ -111,20 +119,16 @@
                   <button @click="deleteTrek(trek.id)" class="btn btn-sm btn-outline-danger">🗑</button>
                 </td>
               </tr>
+              <tr v-if="treks.length === 0">
+                <td colspan="6" class="text-muted text-center">No treks yet.</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- STAFF TAB -->
+      <!-- STAFF PANEL -->
       <div v-if="activeTab === 'Staff'">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 style="color:#5a4a3a;">Trek Staff</h5>
-          <button class="btn btn-sm" style="background:#4a6741; color:white;"
-            @click="showStaffForm = !showStaffForm">
-            + Add Staff
-          </button>
-        </div>
 
         <!-- Add Staff Form -->
         <div v-if="showStaffForm" class="card p-3 mb-3" style="border:1px solid #c8b89a;">
@@ -167,7 +171,7 @@
                 <td>{{ s.name }}</td>
                 <td>{{ s.email }}</td>
                 <td>{{ s.contact_detail }}</td>
-                <td>{{ s.assigned_treks.map(t => t.name).join(', ') || '—' }}</td>
+                <td>{{ s.assigned_treks.map(t => t.name).join(', ') || 'None' }}</td>
                 <td>
                   <select class="form-select form-select-sm d-inline w-auto"
                     @change="assignStaff(s.id, $event.target.value)">
@@ -176,14 +180,16 @@
                   </select>
                 </td>
               </tr>
+              <tr v-if="staffList.length === 0">
+                <td colspan="5" class="text-muted text-center">No staff yet.</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- USERS TAB -->
-      <div v-if="activeTab === 'Users'">
-        <h5 class="mb-3" style="color:#5a4a3a;">Registered Trekkers</h5>
+      <!-- TREKKERS PANEL -->
+      <div v-if="activeTab === 'Trekkers'">
         <div class="table-responsive">
           <table class="table table-hover" style="font-size:0.9rem;">
             <thead style="background:#e8ddd0;">
@@ -195,7 +201,8 @@
                 <td>{{ u.email }}</td>
                 <td>{{ u.username }}</td>
                 <td>
-                  <span class="badge" :style="u.active ? 'background:#4a6741' : 'background:#a05c3a'">
+                  <span class="badge"
+                    :style="u.active ? 'background:#4a6741;color:white' : 'background:#a05c3a;color:white'">
                     {{ u.active ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
@@ -206,14 +213,16 @@
                     class="btn btn-sm btn-outline-success">Activate</button>
                 </td>
               </tr>
+              <tr v-if="users.length === 0">
+                <td colspan="5" class="text-muted text-center">No trekkers registered yet.</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- BOOKINGS TAB -->
+      <!-- BOOKINGS PANEL -->
       <div v-if="activeTab === 'Bookings'">
-        <h5 class="mb-3" style="color:#5a4a3a;">All Bookings</h5>
         <div class="table-responsive">
           <table class="table table-hover" style="font-size:0.9rem;">
             <thead style="background:#e8ddd0;">
@@ -226,6 +235,9 @@
                 <td>{{ b.booking_date?.slice(0,10) }}</td>
                 <td><span class="badge" :style="statusBadge(b.status)">{{ b.status }}</span></td>
                 <td>{{ b.payment_status }}</td>
+              </tr>
+              <tr v-if="bookings.length === 0">
+                <td colspan="5" class="text-muted text-center">No bookings yet.</td>
               </tr>
             </tbody>
           </table>
@@ -242,14 +254,13 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../api'
 
-const router      = useRouter()
-const auth        = useAuthStore()
-const activeTab   = ref('Treks')
-const tabs        = ['Treks', 'Staff', 'Users', 'Bookings']
+const router        = useRouter()
+const auth          = useAuthStore()
+const activeTab     = ref('Treks')
 const showTrekForm  = ref(false)
 const showStaffForm = ref(false)
-const trekMsg     = ref('')
-const staffMsg    = ref('')
+const trekMsg       = ref('')
+const staffMsg      = ref('')
 
 const stats     = ref([])
 const treks     = ref([])
@@ -282,20 +293,20 @@ async function loadDashboard() {
   const res = await api.get('/admin/dashboard')
   const d   = res.data
   stats.value = [
-    { label: 'Total Treks',    value: d.total_treks },
-    { label: 'Total Bookings', value: d.total_bookings },
-    { label: 'Staff Members',  value: d.total_staff },
-    { label: 'Trekkers',       value: d.total_trekkers },
+    { label: 'Total Treks',    value: d.total_treks,    tab: 'Treks' },
+    { label: 'Total Bookings', value: d.total_bookings, tab: 'Bookings' },
+    { label: 'Staff Members',  value: d.total_staff,    tab: 'Staff' },
+    { label: 'Trekkers',       value: d.total_trekkers, tab: 'Trekkers' },
   ]
 }
 
 async function loadTreks() {
-  const res  = await api.get('/admin/treks')
+  const res   = await api.get('/admin/treks')
   treks.value = res.data.treks
 }
 
 async function loadStaff() {
-  const res      = await api.get('/admin/staff')
+  const res       = await api.get('/admin/staff')
   staffList.value = res.data.staff
 }
 
@@ -316,13 +327,14 @@ async function createTrek() {
       duration_days: parseInt(newTrek.value.duration_days),
       total_slots:   parseInt(newTrek.value.total_slots),
     })
-    trekMsg.value = 'Trek created!'
+    trekMsg.value      = 'Trek created!'
     showTrekForm.value = false
+    newTrek.value      = { name:'', location:'', difficulty:'', duration_days:'', total_slots:'', start_date:'', end_date:'', description:'' }
     await loadTreks()
     await loadDashboard()
     setTimeout(() => trekMsg.value = '', 3000)
   } catch (e) {
-    trekMsg.value = e.response?.data?.message || 'Error'
+    trekMsg.value = e.response?.data?.message || 'Error creating trek'
   }
 }
 
@@ -342,13 +354,14 @@ async function deleteTrek(trekId) {
 async function createStaff() {
   try {
     await api.post('/admin/staff', newStaff.value)
-    staffMsg.value = 'Staff added!'
+    staffMsg.value      = 'Staff added!'
     showStaffForm.value = false
+    newStaff.value      = { full_name:'', username:'', email:'', password:'', contact_detail:'' }
     await loadStaff()
     await loadDashboard()
     setTimeout(() => staffMsg.value = '', 3000)
   } catch (e) {
-    staffMsg.value = e.response?.data?.message || 'Error'
+    staffMsg.value = e.response?.data?.message || 'Error adding staff'
   }
 }
 
@@ -361,11 +374,13 @@ async function assignStaff(staffId, trekId) {
 async function deactivateUser(userId) {
   await api.post(`/admin/users/${userId}/deactivate`)
   await loadUsers()
+  await loadDashboard()
 }
 
 async function activateUser(userId) {
   await api.post(`/admin/users/${userId}/activate`)
   await loadUsers()
+  await loadDashboard()
 }
 
 function handleLogout() {
