@@ -38,14 +38,15 @@ Managing treks manually through spreadsheets and calls is messy. This applicatio
 
 ## Project Structure
 
+```text
 trekking-management-app-mad2/
 ├── backend/
 │   ├── app/
-│   │   ├── init.py        # App factory, blueprint registration
-│   │   ├── models.py          # Database models
-│   │   ├── config.py          # Configuration
-│   │   ├── celery_app.py      # Celery setup
-│   │   ├── tasks.py           # Background tasks
+│   │   ├── __init__.py         # App factory, blueprint registration
+│   │   ├── models.py           # Database models
+│   │   ├── config.py           # Configuration
+│   │   ├── celery_app.py       # Celery setup
+│   │   ├── tasks.py            # Background tasks
 │   │   └── routes/
 │   │       ├── auth_routes.py
 │   │       ├── admin_routes.py
@@ -75,8 +76,7 @@ trekking-management-app-mad2/
 │   ├── index.html
 │   └── package.json
 └── README.md
-
----
+```
 
 ## Prerequisites
 
@@ -156,6 +156,7 @@ celery -A celery_worker.celery beat --loglevel=info
 Once you run `create_db.py`, the admin account is created automatically. No registration needed for admin.
 
 Email:    admin@tma.com
+
 Password: Admin@123
 
 Trek staff accounts are created by the admin from the dashboard. Trekkers can self-register from the registration page.
@@ -203,5 +204,7 @@ A full list of endpoints is in the project report.
 ## Author
 
 Vedika Agarwal
+
 Roll Number: 24f2002190
+
 IIT Madras BS in Data Science and Applications
